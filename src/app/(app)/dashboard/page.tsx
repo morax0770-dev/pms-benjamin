@@ -25,13 +25,12 @@ const AVATAR_COLORS = ["#003366","#2D2D2D","#0d9488","#f59e0b","#f04d6a","#22c55
 
 // Status → badge class map
 const STATUS_BADGE: Record<string,string> = {
-  new_lead:    "bj-badge bj-badge-muted",
-  contacted:   "bj-badge bj-badge-info",
-  meeting:     "bj-badge bj-badge-warning",
-  quotation:   "bj-badge bj-badge-success",
-  negotiation: "bj-badge bj-badge-warning",
-  won:         "bj-badge bj-badge-success",
-  lost:        "bj-badge bj-badge-danger",
+  NEW:       "bj-badge bj-badge-muted",
+  WAITING:   "bj-badge bj-badge-info",
+  BULLET:    "bj-badge bj-badge-warning",
+  QUOTED:    "bj-badge bj-badge-success",
+  PAID:      "bj-badge bj-badge-success",
+  CANCELLED: "bj-badge bj-badge-danger",
 };
 
 // ─── HELPERS ─────────────────────────────────────────────────────
@@ -158,8 +157,8 @@ function MiniCalendar({year,month,apptDates}:{year:number;month:number;apptDates
 // ─── LEAD DONUT ──────────────────────────────────────────────────
 function LeadDonut() {
   const total=leads.length;
-  const paid=leads.filter(l=>l.status==="won").length;
-  const active=leads.filter(l=>l.status!=="won"&&l.status!=="lost").length;
+  const paid=leads.filter(l=>l.status==="PAID").length;
+  const active=leads.filter(l=>l.status!=="PAID"&&l.status!=="CANCELLED").length;
   const paidPct=total>0?Math.round(paid/total*100):0;
   const activePct=total>0?Math.round(active/total*100):0;
   const R1=54,R2=38,CX=80,CY=80,SW=14;
@@ -265,7 +264,7 @@ export default function DashboardPage() {
   const [calMonth,setCalMonth] = useState(5);
 
   const totalRevenue = useMemo(()=>payments.filter(p=>p.status==="confirmed").reduce((s,p)=>s+p.amount,0),[]);
-  const activeLeads  = useMemo(()=>leads.filter(l=>l.status!=="won"&&l.status!=="lost"),[]);
+  const activeLeads  = useMemo(()=>leads.filter(l=>l.status!=="PAID"&&l.status!=="CANCELLED"),[]);
   const upcomingAppts= useMemo(()=>[...appointments].filter(a=>a.date>="2026-06-24"&&a.status==="upcoming").sort((a,b)=>a.date.localeCompare(b.date)).slice(0,2),[]);
   const apptDates    = useMemo(()=>new Set(appointments.map(a=>a.date)),[]);
   const inProgressP  = useMemo(()=>projects.filter(p=>p.status==="in_progress"),[]);
@@ -474,7 +473,7 @@ export default function DashboardPage() {
                         <td style={{fontWeight:700,color:"var(--foreground)"}}>{l.value}</td>
                         <td style={{color:"var(--muted-foreground)",fontSize:"0.75rem"}}>{l.province}</td>
                         <td>
-                          <span className={STATUS_BADGE[l.status]??STATUS_BADGE.new_lead}>
+                          <span className={STATUS_BADGE[l.status]??STATUS_BADGE.NEW}>
                             {leadStatusLabel[l.status as LeadStatus]??l.status}
                           </span>
                         </td>

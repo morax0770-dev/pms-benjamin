@@ -488,8 +488,9 @@ export default function PaymentsPage(){
 
       {/* ══ DETAIL PANEL ════════════════════════════════════ */}
       {selected&&(
-        <div style={{width:330,flexShrink:0,position:"sticky",top:80,maxHeight:"calc(100vh - 100px)",overflowY:"auto"}}>
-          <div style={{...CARD,overflow:"hidden"}}>
+        <>
+          <div onClick={()=>setSelected(null)} style={{position:"fixed",inset:0,background:"rgba(45,45,45,.38)",zIndex:300}} />
+          <div style={{position:"fixed",right:0,top:0,height:"100vh",width:420,background:"#fff",overflowY:"auto",zIndex:301,boxShadow:"-6px 0 40px rgba(0,51,102,.16)"}}>
 
             {/* Panel header */}
             <div style={{background:selected.status==="confirmed"?"#1a7a4a":selected.status==="pending"?"#c97c00":"#b03050",padding:"16px 16px 12px"}}>
@@ -695,7 +696,7 @@ export default function PaymentsPage(){
               )}
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {showModal&&(

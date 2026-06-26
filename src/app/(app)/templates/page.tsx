@@ -200,7 +200,7 @@ function ApplyModal({
   onClose: () => void;
 }) {
   const router = useRouter();
-  const [leadId,    setLeadId]    = useState<number | "">("");
+  const [leadId,    setLeadId]    = useState<string>("");
   const [assignee,  setAssignee]  = useState(OWNERS[0]);
   const [confirmed, setConfirmed] = useState(false);
   const [createdTasks, setCreatedTasks] = useState<CreatedTask[]>([]);
@@ -265,12 +265,12 @@ function ApplyModal({
                   <label style={LBL}>เลือกลีด <span style={{ color: "#f04d6a" }}>*</span></label>
                   <select
                     value={leadId}
-                    onChange={e => setLeadId(e.target.value ? Number(e.target.value) : "")}
+                    onChange={e => setLeadId(e.target.value)}
                     style={INP}
                   >
                     <option value="">— เลือกลีด —</option>
                     {leads
-                      .filter(l => l.status !== "won" && l.status !== "lost")
+                      .filter(l => l.status !== "PAID" && l.status !== "CANCELLED")
                       .map(l => (
                         <option key={l.id} value={l.id}>
                           {l.company} — {l.product} ({l.value})

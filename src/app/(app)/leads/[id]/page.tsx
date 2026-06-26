@@ -19,15 +19,14 @@ const PRIMARY = "#003366"; const STEEL = "#2D2D2D";
 const BORDER = "#cfd4dc"; const SUCCESS = "#22c55e";
 
 const STATUS_COLOR: Record<LeadStatus, { bg: string; text: string }> = {
-  new_lead:    { bg: "#f0f4f8", text: "#6b7280" },
-  contacted:   { bg: "#dce5f0", text: "#003366" },
-  meeting:     { bg: "#f0f9ff", text: "#0369a1" },
-  quotation:   { bg: "#fffbeb", text: "#b45309" },
-  negotiation: { bg: "#f0f9ff", text: "#475569" },
-  won:         { bg: "#e5faf0", text: "#15803d" },
-  lost:        { bg: "#fdeaed", text: "#f04d6a" },
+  NEW:       { bg: "#f0f0f5", text: "#6b7280" },
+  WAITING:   { bg: "#e0f5fd", text: "#0284c7" },
+  BULLET:    { bg: "#fff4eb", text: "#ea6c00" },
+  QUOTED:    { bg: "#f0fdf4", text: "#15803d" },
+  PAID:      { bg: "#e6faf7", text: "#0f766e" },
+  CANCELLED: { bg: "#fdeaed", text: "#f04d6a" },
 };
-const STATUS_ORDER: LeadStatus[] = ["new_lead","contacted","meeting","quotation","negotiation","won","lost"];
+const STATUS_ORDER: LeadStatus[] = ["NEW","WAITING","BULLET","QUOTED","PAID","CANCELLED"];
 const ACT_TYPES = ["call","email","meeting","note","visit","doc"] as const;
 
 function ActivityIcon({ type }: { type: string }) {
@@ -63,7 +62,7 @@ export default function LeadDetailPage() {
   const numId = Number(params.id);
   const lead = leads.find(l => l.numId === numId);
 
-  const [status,         setStatus]         = useState<LeadStatus>(lead?.status ?? "new_lead");
+  const [status,         setStatus]         = useState<LeadStatus>(lead?.status ?? "NEW");
   const [showStatusDrop, setShowStatusDrop] = useState(false);
   const [activities,     setActivities]     = useState<ActivityEntry[]>(INIT_ACTS);
   const [actText,        setActText]        = useState("");

@@ -488,8 +488,9 @@ export default function QuotationsPage(){
 
       {/* ══ DETAIL PANEL ════════════════════════════════════ */}
       {selected&&(
-        <div style={{width:334,flexShrink:0,position:"sticky",top:80,maxHeight:"calc(100vh - 100px)",overflowY:"auto"}}>
-          <div style={{background:"#fff",borderRadius:16,border:`1px solid ${BORDER}`,boxShadow:"0 4px 24px rgba(0,51,102,.08)",overflow:"hidden"}}>
+        <>
+          <div onClick={()=>setDetailId(null)} style={{position:"fixed",inset:0,background:"rgba(45,45,45,.38)",zIndex:300}} />
+          <div style={{position:"fixed",right:0,top:0,height:"100vh",width:420,background:"#fff",overflowY:"auto",zIndex:301,boxShadow:"-6px 0 40px rgba(0,51,102,.16)"}}>
 
             {/* Panel header */}
             <div style={{background:PRIMARY,padding:"16px 16px 12px"}}>
@@ -694,7 +695,7 @@ export default function QuotationsPage(){
               )}
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* ══ BULK ACTION BAR (fixed bottom) ════════════════════ */}

@@ -210,7 +210,9 @@ export default function TeamPage() {
 
       {/* Side panel */}
       {selected && (
-        <div style={{ ...CARD, width: 300, flexShrink: 0, alignSelf: "flex-start", position: "sticky", top: 16 }}>
+        <>
+          <div onClick={() => setSelected(null)} style={{position:"fixed",inset:0,background:"rgba(45,45,45,.38)",zIndex:300}} />
+          <div style={{position:"fixed",right:0,top:0,height:"100vh",width:420,background:"#fff",overflowY:"auto",zIndex:301,boxShadow:"-6px 0 40px rgba(0,51,102,.16)"}}>
           <div style={{ padding: "14px 16px", borderBottom: `1px solid ${BORDER}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span style={{ fontSize: "0.84rem", fontWeight: 700, color: "#2D2D2D" }}>ข้อมูลสมาชิก</span>
             <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", cursor: "pointer", color: MUTED }}><X size={16} /></button>
@@ -285,6 +287,7 @@ export default function TeamPage() {
             </div>
           </div>
         </div>
+        </>
       )}
 
       {/* Modal */}

@@ -192,7 +192,10 @@ function DetailPanel({task,allTasks,onClose,onEdit,onChangeStatus,onDelete}:{
   const sb=taskStatusBadge[task.status];
 
   return (
-    <div style={{width:330,minWidth:300,flexShrink:0,...CARD,borderRadius:16,overflowY:"auto",maxHeight:"calc(100vh - 140px)",alignSelf:"flex-start",position:"sticky",top:0}}>
+    <>
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(45,45,45,.38)",zIndex:300}} />
+    <div style={{position:"fixed",right:0,top:0,height:"100vh",width:420,background:"#fff",overflowY:"auto",zIndex:301,boxShadow:"-6px 0 40px rgba(0,51,102,.16)"}}>
+      <div style={{display:"flex",flexDirection:"column",minHeight:"100%"}}>
       {/* Header */}
       <div style={{background:PRIMARY,padding:"16px 14px 12px"}}>
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:10}}>
@@ -326,7 +329,9 @@ function DetailPanel({task,allTasks,onClose,onEdit,onChangeStatus,onDelete}:{
           </div>
         )}
       </div>
+      </div>
     </div>
+    </>
   );
 }
 
