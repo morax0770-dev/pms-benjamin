@@ -36,10 +36,10 @@ function AreaChart({ data }: { data: { month: string; value: number }[] }) {
   );
 }
 
-const FUNNEL_ORDER: LeadStatus[] = ["NEW", "WAITING", "BULLET", "QUOTED", "PAID", "CANCELLED"];
+const FUNNEL_ORDER: LeadStatus[] = ["new_lead", "contacted", "meeting", "quotation", "negotiation", "won", "lost"];
 const FUNNEL_COLOR: Record<LeadStatus, string> = {
-  NEW: "#6b7280", WAITING: "#0284c7", BULLET: "#ea6c00",
-  QUOTED: "#15803d", PAID: "#0f766e", CANCELLED: "#f04d6a",
+  new_lead: "#6b7280", contacted: "#003366", meeting: "#7c3aed",
+  quotation: "#b45309", negotiation: "#475569", won: "#15803d", lost: "#f04d6a",
 };
 
 export default function AnalyticsPage() {

@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { dealerLeaderboard } from "@/lib/mock";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Trophy } from "lucide-react";
 
 const CARD: React.CSSProperties = {
   background: "#fff", borderRadius: 16, border: "1px solid #cfd4dc",
@@ -24,7 +24,7 @@ export function LeaderboardCard() {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px 14px", borderBottom: "1px solid #cfd4dc" }}>
         <div>
-          <p style={{ fontSize: "0.86rem", fontWeight: 700, color: "#2D2D2D", margin: 0 }}>🏆 อันดับสาขา</p>
+          <p style={{ fontSize: "0.86rem", fontWeight: 700, color: "#2D2D2D", margin: 0, display:"flex", alignItems:"center", gap:5 }}><Trophy size={14}/> อันดับสาขา</p>
           <p style={{ fontSize: "0.72rem", color: "#6b7280", margin: "2px 0 0" }}>เดือนมิถุนายน 2026</p>
         </div>
         <button style={{ fontSize: "0.72rem", color: "#003366", fontWeight: 600, background: "none", border: "none", cursor: "pointer" }}>ดูทั้งหมด</button>

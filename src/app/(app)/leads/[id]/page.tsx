@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { Phone, Mail, Users, MapPin, FileText, CalendarDays, CheckCircle2 } from "lucide-react";
 import {
   leads, customers, quotations, projects,
   leadStatusLabel, quotationStatusLabel, quotationStatusColor,
@@ -18,23 +19,34 @@ const PRIMARY = "#003366"; const STEEL = "#2D2D2D";
 const BORDER = "#cfd4dc"; const SUCCESS = "#22c55e";
 
 const STATUS_COLOR: Record<LeadStatus, { bg: string; text: string }> = {
-  NEW:       { bg: "#f0f0f5",  text: "#6b7280" },
-  WAITING:   { bg: "#e0f5fd",  text: "#0284c7" },
-  BULLET:    { bg: "#fff4eb",  text: "#ea6c00" },
-  QUOTED:    { bg: "#f0fdf4",  text: "#15803d" },
-  PAID:      { bg: "#e6faf7",  text: "#0f766e" },
-  CANCELLED: { bg: "#fdeaed",  text: "#f04d6a" },
+  new_lead:    { bg: "#f0f4f8", text: "#6b7280" },
+  contacted:   { bg: "#dce5f0", text: "#003366" },
+  meeting:     { bg: "#f0f9ff", text: "#0369a1" },
+  quotation:   { bg: "#fffbeb", text: "#b45309" },
+  negotiation: { bg: "#f0f9ff", text: "#475569" },
+  won:         { bg: "#e5faf0", text: "#15803d" },
+  lost:        { bg: "#fdeaed", text: "#f04d6a" },
 };
-const STATUS_ORDER: LeadStatus[] = ["NEW","WAITING","BULLET","QUOTED","PAID","CANCELLED"];
-const ACT_ICONS: Record<string,string> = { call:"📞", email:"📧", meeting:"🤝", note:"📝", visit:"📍", doc:"📄" };
+const STATUS_ORDER: LeadStatus[] = ["new_lead","contacted","meeting","quotation","negotiation","won","lost"];
+const ACT_TYPES = ["call","email","meeting","note","visit","doc"] as const;
 
-type ActivityEntry = { id:number; date:string; icon:string; text:string; type:string };
+function ActivityIcon({ type }: { type: string }) {
+  const s = 14;
+  if (type === "call")    return <Phone size={s}/>;
+  if (type === "email")   return <Mail size={s}/>;
+  if (type === "meeting") return <Users size={s}/>;
+  if (type === "visit")   return <MapPin size={s}/>;
+  if (type === "doc")     return <FileText size={s}/>;
+  return <FileText size={s}/>;
+}
+
+type ActivityEntry = { id:number; date:string; text:string; type:string };
 
 const INIT_ACTS: ActivityEntry[] = [
-  { id:1, date:"22 มิ.ย. 2569", icon:"📞", text:"โทรติดตามลูกค้า — ยืนยันนัดสำรวจ", type:"call" },
-  { id:2, date:"18 มิ.ย. 2569", icon:"📄", text:"ส่งใบเสนอราคาเบื้องต้น", type:"doc" },
-  { id:3, date:"10 มิ.ย. 2569", icon:"📍", text:"สำรวจหน้างานพร้อมทีม", type:"visit" },
-  { id:4, date:"2 มิ.ย. 2569",  icon:"✦",  text:"บันทึกลีดใหม่เข้าระบบ", type:"note" },
+  { id:1, date:"22 มิ.ย. 2569", text:"โทรติดตามลูกค้า — ยืนยันนัดสำรวจ", type:"call" },
+  { id:2, date:"18 มิ.ย. 2569", text:"ส่งใบเสนอราคาเบื้องต้น", type:"doc" },
+  { id:3, date:"10 มิ.ย. 2569", text:"สำรวจหน้างานพร้อมทีม", type:"visit" },
+  { id:4, date:"2 มิ.ย. 2569",  text:"บันทึกลีดใหม่เข้าระบบ", type:"note" },
 ];
 
 function InfoRow({ label, value }: { label:string; value:React.ReactNode }) {
@@ -51,7 +63,7 @@ export default function LeadDetailPage() {
   const numId = Number(params.id);
   const lead = leads.find(l => l.numId === numId);
 
-  const [status,         setStatus]         = useState<LeadStatus>(lead?.status ?? "NEW");
+  const [status,         setStatus]         = useState<LeadStatus>(lead?.status ?? "new_lead");
   const [showStatusDrop, setShowStatusDrop] = useState(false);
   const [activities,     setActivities]     = useState<ActivityEntry[]>(INIT_ACTS);
   const [actText,        setActText]        = useState("");
@@ -86,7 +98,6 @@ export default function LeadDetailPage() {
     if (!actText.trim()) return;
     setActivities(prev => [{
       id: Date.now(), date:"23 มิ.ย. 2569",
-      icon: ACT_ICONS[actType] ?? "📝",
       text: actText.trim(), type: actType,
     }, ...prev]);
     setActText("");
@@ -100,12 +111,12 @@ export default function LeadDetailPage() {
         <div style={{ display:"flex", gap:8 }}>
           <a href="/appointments"
             style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"8px 16px", borderRadius:10, border:`1px solid ${BORDER}`, background:"#fff", color:STEEL, fontSize:"0.78rem", fontWeight:600, textDecoration:"none" }}>
-            📅 เพิ่มนัดหมาย
+            <CalendarDays size={14}/> เพิ่มนัดหมาย
           </a>
           <button
             onClick={() => { setQName(lead.name); setQValue(lead.value); setQProduct(lead.product); setQProvince(lead.province); setQNotes(""); setQSaved(false); setShowQuoteModal(true); }}
             style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"8px 16px", borderRadius:10, background:PRIMARY, color:"#fff", fontSize:"0.78rem", fontWeight:700, border:"none", cursor:"pointer", boxShadow:"0 4px 12px rgba(0,51,102,.25)" }}>
-            📄 สร้างใบเสนอราคา
+            <FileText size={14}/> สร้างใบเสนอราคา
           </button>
         </div>
       </div>
@@ -166,7 +177,7 @@ export default function LeadDetailPage() {
               <div style={{ display:"flex", alignItems:"center", gap:8, flex:1 }}>
                 <span style={{ fontSize:"0.82rem", color:STEEL, fontWeight:500 }}>{phone}</span>
                 <button onClick={() => setEditPhone(true)} style={{ fontSize:"0.67rem", color:"#9ca3af", background:"none", border:"none", cursor:"pointer" }}>แก้ไข</button>
-                <a href={`tel:${phone}`} style={{ fontSize:"0.68rem", color:PRIMARY, background:"#dce5f0", borderRadius:99, padding:"2px 8px", fontWeight:600, textDecoration:"none" }}>📞 โทร</a>
+                <a href={`tel:${phone}`} style={{ fontSize:"0.68rem", color:PRIMARY, background:"#dce5f0", borderRadius:99, padding:"2px 8px", fontWeight:600, textDecoration:"none", display:"inline-flex", alignItems:"center", gap:4 }}><Phone size={11}/> โทร</a>
               </div>
             )}
           </div>
@@ -206,10 +217,10 @@ export default function LeadDetailPage() {
           {/* Add activity */}
           <div style={{ marginBottom:16, padding:"12px 14px", background:"#f8f9fb", borderRadius:12, border:"1px solid #f0f0f5" }}>
             <div style={{ display:"flex", gap:6, marginBottom:8 }}>
-              {Object.entries(ACT_ICONS).map(([k,icon]) => (
+              {ACT_TYPES.map(k => (
                 <button key={k} onClick={() => setActType(k)}
-                  style={{ width:30, height:30, borderRadius:8, border:actType===k?`2px solid ${PRIMARY}`:"1px solid #e2e8f0", background:actType===k?"#dce5f0":"#fff", cursor:"pointer", fontSize:"0.85rem" }}>
-                  {icon}
+                  style={{ width:30, height:30, borderRadius:8, border:actType===k?`2px solid ${PRIMARY}`:"1px solid #e2e8f0", background:actType===k?"#dce5f0":"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <ActivityIcon type={k}/>
                 </button>
               ))}
             </div>
@@ -231,8 +242,8 @@ export default function LeadDetailPage() {
                 {i < activities.length-1 && (
                   <div style={{ position:"absolute", left:14, top:30, bottom:0, width:2, background:"#cfd4dc" }}/>
                 )}
-                <div style={{ width:30, height:30, borderRadius:"50%", background:"#dce5f0", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"0.85rem", flexShrink:0, zIndex:1 }}>
-                  {a.icon}
+                <div style={{ width:30, height:30, borderRadius:"50%", background:"#dce5f0", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, zIndex:1 }}>
+                  <ActivityIcon type={a.type}/>
                 </div>
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:"0.82rem", color:STEEL, fontWeight:500, marginBottom:2 }}>{a.text}</div>
@@ -287,7 +298,7 @@ export default function LeadDetailPage() {
             {/* Modal header */}
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:22 }}>
               <div>
-                <div style={{ fontSize:"1rem", fontWeight:800, color:STEEL }}>📄 สร้างใบเสนอราคา</div>
+                <div style={{ fontSize:"1rem", fontWeight:800, color:STEEL, display:"flex", alignItems:"center", gap:7 }}><FileText size={16}/> สร้างใบเสนอราคา</div>
                 <div style={{ fontSize:"0.72rem", color:"#6b7280", marginTop:3 }}>จากลีด {lead.id} · {lead.company}</div>
               </div>
               <button onClick={() => setShowQuoteModal(false)}
@@ -296,7 +307,7 @@ export default function LeadDetailPage() {
 
             {qSaved ? (
               <div style={{ textAlign:"center", padding:"32px 0" }}>
-                <div style={{ fontSize:"2.5rem", marginBottom:12 }}>✅</div>
+                <div style={{ marginBottom:12, display:"flex", justifyContent:"center" }}><CheckCircle2 size={48} color="#15803d"/></div>
                 <div style={{ fontSize:"1rem", fontWeight:700, color:"#15803d", marginBottom:6 }}>สร้างใบเสนอราคาสำเร็จ</div>
                 <div style={{ fontSize:"0.78rem", color:"#6b7280", marginBottom:20 }}>ระบบบันทึก {qName} เรียบร้อยแล้ว</div>
                 <button onClick={() => setShowQuoteModal(false)}
@@ -359,7 +370,7 @@ export default function LeadDetailPage() {
                       if (!qName.trim()) return;
                       setActivities(prev => [{
                         id: Date.now(), date:"24 มิ.ย. 2569",
-                        icon:"📄", text:`สร้างใบเสนอราคา "${qName}" มูลค่า ${qValue}`, type:"doc",
+                        text:`สร้างใบเสนอราคา "${qName}" มูลค่า ${qValue}`, type:"doc",
                       }, ...prev]);
                       setQSaved(true);
                     }}

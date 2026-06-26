@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { salesByMonth, leads, projects, quotations } from "@/lib/mock";
+import { salesByMonth, leads, projects, quotations, leadStatusLabel } from "@/lib/mock";
 
 const CARD: React.CSSProperties = { background: "#fff", borderRadius: 16, border: "1px solid #cfd4dc", boxShadow: "0 2px 14px rgba(0,51,102,.07)" };
 
@@ -29,9 +29,9 @@ function BarChart({ data }: { data: { month: string; value: number }[] }) {
 const MONTHS = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย."];
 
 export default function SalesReportPage() {
-  const wonLeads = leads.filter(l => l.status === "PAID");
+  const wonLeads = leads.filter(l => l.status === "won");
   const completedProjects = projects.filter(p => p.status === "completed");
-  const approvedQuotes = quotations.filter(q => q.status === "approved");
+  const approvedQuotes = quotations.filter(q => q.status === "won");
   const totalApproved = approvedQuotes.reduce((s, q) => s + q.totalValue, 0);
 
   return (
@@ -71,10 +71,10 @@ export default function SalesReportPage() {
         <div style={{ ...CARD, padding: "16px" }}>
           <div style={{ fontSize: "0.84rem", fontWeight: 700, color: "#2D2D2D", marginBottom: 14 }}>ปิด / เสียดีล</div>
           {[
-            { label: "ชำระเงินแล้ว", count: wonLeads.length, color: "#0f766e", bg: "#e6faf7" },
-            { label: "ยกเลิก", count: leads.filter(l => l.status === "CANCELLED").length, color: "#f04d6a", bg: "#fdeaed" },
-            { label: "ออกใบเสนอราคา", count: leads.filter(l => l.status === "QUOTED").length, color: "#15803d", bg: "#f0fdf4" },
-            { label: "รอติดตาม", count: leads.filter(l => ["NEW", "WAITING"].includes(l.status)).length, color: "#6b7280", bg: "#f0f0f5" },
+            { label: "ปิดการขายสำเร็จ", count: wonLeads.length, color: "#15803d", bg: "#e5faf0" },
+            { label: "ปิดการขายไม่สำเร็จ", count: leads.filter(l => l.status === "lost").length, color: "#f04d6a", bg: "#fdeaed" },
+            { label: "เสนอราคา", count: leads.filter(l => l.status === "quotation").length, color: "#b45309", bg: "#fffbeb" },
+            { label: "รอติดตาม", count: leads.filter(l => ["new_lead", "contacted"].includes(l.status)).length, color: "#6b7280", bg: "#f0f4f8" },
           ].map(row => (
             <div key={row.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", borderRadius: 10, background: row.bg, marginBottom: 6 }}>
               <span style={{ fontSize: "0.78rem", fontWeight: 600, color: row.color }}>{row.label}</span>
@@ -112,8 +112,8 @@ export default function SalesReportPage() {
                   <td style={{ padding: "11px 14px", fontSize: "0.88rem", fontWeight: 800, color: "#2D2D2D" }}>{l.value}</td>
                   <td style={{ padding: "11px 14px", fontSize: "0.8rem", color: "#6b7280" }}>{l.province}</td>
                   <td style={{ padding: "11px 14px" }}>
-                    <span style={{ padding: "3px 10px", borderRadius: 99, fontSize: "0.68rem", fontWeight: 700, background: l.status === "PAID" ? "#e6faf7" : l.status === "CANCELLED" ? "#fdeaed" : "#dce5f0", color: l.status === "PAID" ? "#0f766e" : l.status === "CANCELLED" ? "#f04d6a" : "#003366" }}>
-                      {l.status === "PAID" ? "ชำระเงินแล้ว" : l.status === "CANCELLED" ? "ยกเลิก" : "กำลังดำเนินการ"}
+                    <span style={{ padding: "3px 10px", borderRadius: 99, fontSize: "0.68rem", fontWeight: 700, background: l.status === "won" ? "#e5faf0" : l.status === "lost" ? "#fdeaed" : "#dce5f0", color: l.status === "won" ? "#15803d" : l.status === "lost" ? "#f04d6a" : "#003366" }}>
+                      {leadStatusLabel[l.status]}
                     </span>
                   </td>
                 </tr>

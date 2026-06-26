@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
-  quotations as INIT_Q, customers, projects, leads,
+  quotations as INIT_Q, customers, projects, leads, BUILDING_TYPES,
   quotationStatusLabel, quotationStatusColor,
   projectStatusLabel, projectStatusColor,
   type QuotationStatus, type QuotationMock,
@@ -21,26 +21,18 @@ const STEEL   = "#2D2D2D";
 const BORDER  = "#e5e7eb";
 const MUTED   = "#6b7280";
 
-const STATUS_ORDER: QuotationStatus[] = ["draft","approved","sent_to_client","won","lost","expired","rejected","pending_hq"];
+const STATUS_ORDER: QuotationStatus[] = ["draft","sent","won","lost","expired"];
 
-const STATUS_ACTIONS: Record<QuotationStatus,{label:string;next:QuotationStatus;bg:string;color:string;hqOnly?:boolean}[]> = {
-  draft:          [{label:"อนุมัติใบเสนอราคา", next:"approved", bg:"#e5faf0", color:"#22c55e"}],
-  pending_hq:     [
-    {label:"✓ อนุมัติ (HQ)", next:"approved",  bg:"#e5faf0", color:"#22c55e", hqOnly:true},
-    {label:"ปฏิเสธ (HQ)",    next:"rejected",  bg:"#fdeaed", color:"#f04d6a", hqOnly:true},
+const STATUS_ACTIONS: Record<QuotationStatus,{label:string;next:QuotationStatus;bg:string;color:string}[]> = {
+  draft: [{label:"ส่งให้ลูกค้า", next:"sent", bg:"#dce5f0", color:PRIMARY}],
+  sent:  [
+    {label:"ลูกค้ายืนยัน → ปิดการขาย ✓", next:"won",     bg:"#e5faf0", color:"#22c55e"},
+    {label:"ลูกค้าปฏิเสธ",                 next:"lost",    bg:"#fdeaed", color:"#f04d6a"},
+    {label:"หมดอายุ",                       next:"expired", bg:"#f0f0f5", color:"#6b7280"},
   ],
-  approved:       [
-    {label:"ส่งให้ลูกค้า",  next:"sent_to_client", bg:"#dce5f0", color:PRIMARY},
-    {label:"หมดอายุ",        next:"expired",        bg:"#f0f0f5", color:"#6b7280"},
-  ],
-  sent_to_client: [
-    {label:"ลูกค้ายืนยัน → ปิดการขาย ✓", next:"won",  bg:"#e5faf0", color:"#22c55e"},
-    {label:"ลูกค้าปฏิเสธ",                 next:"lost", bg:"#fdeaed", color:"#f04d6a"},
-  ],
-  won:      [],
-  lost:     [{label:"เปิดร่างใหม่", next:"draft", bg:"#f0f0f5", color:"#6b7280"}],
-  rejected: [{label:"เปิดร่างใหม่", next:"draft", bg:"#f0f0f5", color:"#6b7280"}],
-  expired:  [{label:"เปิดร่างใหม่", next:"draft", bg:"#f0f0f5", color:"#6b7280"}],
+  won:     [],
+  lost:    [{label:"เปิดร่างใหม่", next:"draft", bg:"#f0f0f5", color:"#6b7280"}],
+  expired: [{label:"เปิดร่างใหม่", next:"draft", bg:"#f0f0f5", color:"#6b7280"}],
 };
 
 // ── Types ──────────────────────────────────────────────────────
@@ -54,7 +46,7 @@ type QForm = {
   status:QuotationStatus; date:string; items:number;
 };
 
-const BUILDING_TYPES = ["โกดังสินค้า","โรงงาน","งานตามแบบ","อาคารพาณิชย์","เกษตรกรรม","อื่นๆ"];
+// BUILDING_TYPES imported from mock
 
 // ── Helpers ────────────────────────────────────────────────────
 function fmtMoney(v:number){ return "฿"+v.toLocaleString("th-TH"); }
@@ -70,21 +62,19 @@ function exportCSV(rows:QuotationMock[]){
   const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="quotations.csv"; a.click(); URL.revokeObjectURL(url);
 }
 
-const AVATAR_COLORS = ["#4299e1","#0d9488","#f59e0b","#f04d6a","#22c55e","#003366","#64748b","#8b5cf6"];
+const AVATAR_COLORS = ["#003366","#2D2D2D","#f59e0b","#f04d6a","#22c55e","#475569","#64748b","#C0C0C0"];
 function avatarColor(name:string){ return AVATAR_COLORS[name.charCodeAt(0)%AVATAR_COLORS.length]; }
 function initials(name:string){ const w=name.trim().split(/\s+/); return w.length>=2?(w[0][0]+w[1][0]).toUpperCase():name.substring(0,2).toUpperCase(); }
 
 const STATUS_DOT: Record<QuotationStatus,string> = {
-  draft:"#9ca3af", pending_hq:"#9ca3af", approved:"#22c55e",
-  won:"#22c55e", sent_to_client:"#4299e1", lost:"#f04d6a",
-  rejected:"#f04d6a", expired:"#f59e0b",
+  draft:"#9ca3af", sent:"#003366", won:"#22c55e", lost:"#f04d6a", expired:"#f59e0b",
 };
 
 // ── Add / Edit Modal ───────────────────────────────────────────
 const TODAY = "2026-06-23";
 function buildBlank(): QForm {
   const c=customers[0];
-  return { customerId:c.id, customer:c.company, project:"", projectId:0, province:c.province, buildingType:"โกดังสินค้า", area:0, materialCost:0, status:"draft", date:TODAY, items:0 };
+  return { customerId:c.id, customer:c.company, project:"", projectId:0, province:c.province, buildingType:BUILDING_TYPES[0], area:0, materialCost:0, status:"draft", date:TODAY, items:0 };
 }
 
 function QuotationModal({ initial, title, onSave, onClose }:{
@@ -121,11 +111,11 @@ function QuotationModal({ initial, title, onSave, onClose }:{
             </div>
             <div>
               <label style={LBL}>ชื่อโครงการ *</label>
-              <input value={form.project} onChange={e=>set("project",e.target.value)} placeholder="เช่น โกดังสินค้า ABC" style={INP}/>
+              <input value={form.project} onChange={e=>set("project",e.target.value)} placeholder="เช่น โกดังสินค้า บจ. ABC" style={INP}/>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
               <div><label style={LBL}>จังหวัด</label><input value={form.province} onChange={e=>set("province",e.target.value)} placeholder="จังหวัด" style={INP}/></div>
-              <div><label style={LBL}>ประเภทอาคาร</label><select value={form.buildingType} onChange={e=>set("buildingType",e.target.value)} style={INP}>{BUILDING_TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
+              <div><label style={LBL}>ประเภทสินค้า</label><select value={form.buildingType} onChange={e=>set("buildingType",e.target.value)} style={INP}>{BUILDING_TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
               <div><label style={LBL}>พื้นที่ (ตร.ม.)</label><input type="number" value={form.area||""} onChange={e=>set("area",Number(e.target.value))} placeholder="0" style={INP}/></div>
               <div><label style={LBL}>จำนวนรายการ</label><input type="number" value={form.items||""} onChange={e=>set("items",Number(e.target.value))} placeholder="0" style={INP}/></div>
               <div><label style={LBL}>มูลค่า (บาท)</label><input type="number" value={form.materialCost||""} onChange={e=>set("materialCost",Number(e.target.value))} placeholder="0" style={INP}/></div>
@@ -185,16 +175,16 @@ export default function QuotationsPage(){
   },[data,query,filterStatus,sortKey,sortDir]);
 
   // Stats
-  const countPending  = data.filter(q=>q.status==="sent_to_client").length;
-  const countFailed   = data.filter(q=>["lost","rejected","expired"].includes(q.status)).length;
-  const countSuccess  = data.filter(q=>["won","approved"].includes(q.status)).length;
+  const countPending  = data.filter(q=>q.status==="sent").length;
+  const countFailed   = data.filter(q=>["lost","expired"].includes(q.status)).length;
+  const countSuccess  = data.filter(q=>q.status==="won").length;
   const totalWonVal   = data.filter(q=>q.status==="won").reduce((s,q)=>s+q.totalValue,0);
 
   const STATS = [
     { label:"ใบเสนอราคาทั้งหมด", value:data.length, sub:"รายการ", change:"+8%", up:true, filter:"ALL" as "ALL"|QuotationStatus },
-    { label:"รอดำเนินการ",        value:countPending, sub:"รายการ", change:"+6%", up:true, filter:"sent_to_client" as QuotationStatus },
+    { label:"รอการตอบรับ",        value:countPending, sub:"รายการ", change:"+6%", up:true, filter:"sent" as QuotationStatus },
     { label:"ไม่สำเร็จ",          value:countFailed,  sub:"รายการ", change:"-16%", up:false, filter:"lost" as QuotationStatus },
-    { label:"สำเร็จ",             value:countSuccess, sub:`฿${(totalWonVal/1e6).toFixed(1)}M`, change:"+12%", up:true, filter:"won" as QuotationStatus },
+    { label:"ปิดการขาย",          value:countSuccess, sub:`฿${(totalWonVal/1e6).toFixed(1)}M`, change:"+12%", up:true, filter:"won" as QuotationStatus },
   ];
 
   // Related data for detail panel
@@ -447,11 +437,11 @@ export default function QuotationsPage(){
                                   <Edit2 size={13}/> แก้ไข
                                 </button>
                                 {q.status==="draft"&&(
-                                  <button onClick={()=>{changeStatus(q.id,"approved"); setShowMoreMenu(null);}}
-                                    style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 14px",border:"none",background:"none",cursor:"pointer",fontSize:"0.78rem",color:"#22c55e",textAlign:"left"}}
+                                  <button onClick={()=>{changeStatus(q.id,"sent"); setShowMoreMenu(null);}}
+                                    style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 14px",border:"none",background:"none",cursor:"pointer",fontSize:"0.78rem",color:"#003366",textAlign:"left"}}
                                     onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#f9fafb"}
                                     onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="none"}>
-                                    <ArrowRight size={13}/> อนุมัติ
+                                    <ArrowRight size={13}/> ส่งให้ลูกค้า
                                   </button>
                                 )}
                                 <div style={{height:1,background:BORDER,margin:"2px 0"}}/>
@@ -544,7 +534,7 @@ export default function QuotationsPage(){
                 </div>
                 <div style={{fontSize:"0.63rem",fontWeight:700,color:MUTED,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>รายละเอียด</div>
                 {[
-                  {label:"จังหวัด",val:selected.province},{label:"ประเภทอาคาร",val:selected.buildingType},
+                  {label:"จังหวัด",val:selected.province},{label:"ประเภทสินค้า",val:selected.buildingType},
                   {label:"พื้นที่",val:`${selected.area?.toLocaleString()} ตร.ม.`},{label:"จำนวนรายการ",val:`${selected.items} รายการ`},
                   {label:"วันที่",val:fmtDate(selected.date)},
                 ].map((r,i)=>(
@@ -565,6 +555,15 @@ export default function QuotationsPage(){
                         </button>
                       ))}
                     </div>
+                  </div>
+                )}
+                {selected.status==="won"&&(
+                  <div style={{marginTop:14}}>
+                    <button onClick={()=>router.push("/contracts")}
+                      style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 12px",borderRadius:10,background:"#e5faf0",border:"none",cursor:"pointer",width:"100%"}}>
+                      <span style={{fontSize:"0.76rem",fontWeight:700,color:"#15803d"}}>สร้างสัญญา</span>
+                      <ArrowRight size={13} color="#15803d"/>
+                    </button>
                   </div>
                 )}
               </div>

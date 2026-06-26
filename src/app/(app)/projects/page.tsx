@@ -203,7 +203,7 @@ function DetailPanel({project,onClose,onEdit,onChangeStatus,onDelete}:{
   const projMilestones = milestones.filter(m=>m.projectId===project.id);
   const relQuotation = project.quotationId ? quotations.find(q=>q.id===project.quotationId) : null;
   const relContract  = contracts.find(c=>c.project===project.title);
-  const relInvoices  = invoices.filter(i=>i.project===project.title);
+  const relInvoices  = invoices.filter(i=>i.projectId===project.id);
   const relCustomer  = customers.find(c=>c.id===project.customerId);
 
   const dtabs:[string,string,number?][]=[

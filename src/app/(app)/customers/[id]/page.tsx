@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { Phone, Mail, Users, MapPin, FileText } from "lucide-react";
 import {
   customers, projects, quotations,
   projectStatusLabel, projectStatusColor,
@@ -10,16 +11,25 @@ import {
 } from "@/lib/mock";
 
 const CARD: React.CSSProperties = { background:"#fff", borderRadius:16, border:"1px solid #cfd4dc", boxShadow:"0 2px 14px rgba(0,51,102,.07)" };
+
+function ContactIcon({ type }: { type: string }) {
+  const s = 14;
+  if (type === "call")    return <Phone size={s}/>;
+  if (type === "email")   return <Mail size={s}/>;
+  if (type === "meeting") return <Users size={s}/>;
+  if (type === "visit")   return <MapPin size={s}/>;
+  return <FileText size={s}/>;
+}
 const PRIMARY = "#003366"; const STEEL = "#2D2D2D"; const BORDER = "#cfd4dc";
 
-const CONTACT_ICONS: Record<string,string> = { call:"📞", email:"📧", meeting:"🤝", visit:"📍", note:"📝" };
+const CONTACT_TYPES = ["call","email","meeting","visit","note"] as const;
 
-type ContactEntry = { id:number; date:string; icon:string; text:string; type:string };
+type ContactEntry = { id:number; date:string; text:string; type:string };
 const INIT_CONTACTS: ContactEntry[] = [
-  { id:1, date:"20 มิ.ย. 2569", icon:"📞", text:"โทรติดตามสถานะโครงการ — ได้รับการยืนยัน", type:"call" },
-  { id:2, date:"12 มิ.ย. 2569", icon:"📧", text:"ส่งอีเมลเอกสารสัญญาฉบับปรับปรุง", type:"email" },
-  { id:3, date:"5 มิ.ย. 2569",  icon:"🤝", text:"ประชุมหน้างาน — ตกลงเงื่อนไขการส่งมอบ", type:"meeting" },
-  { id:4, date:"28 พ.ค. 2569",  icon:"📄", text:"ส่งใบเสนอราคาเพิ่มเติม", type:"note" },
+  { id:1, date:"20 มิ.ย. 2569", text:"โทรติดตามสถานะโครงการ — ได้รับการยืนยัน", type:"call" },
+  { id:2, date:"12 มิ.ย. 2569", text:"ส่งอีเมลเอกสารสัญญาฉบับปรับปรุง", type:"email" },
+  { id:3, date:"5 มิ.ย. 2569",  text:"ประชุมหน้างาน — ตกลงเงื่อนไขการส่งมอบ", type:"meeting" },
+  { id:4, date:"28 พ.ค. 2569",  text:"ส่งใบเสนอราคาเพิ่มเติม", type:"note" },
 ];
 
 type TabKey = "projects" | "quotations" | "contacts";
@@ -63,7 +73,6 @@ export default function CustomerDetailPage() {
     if (!contactText.trim()) return;
     setContacts(prev => [{
       id:Date.now(), date:"23 มิ.ย. 2569",
-      icon: CONTACT_ICONS[contactType] ?? "📝",
       text: contactText.trim(), type: contactType,
     }, ...prev]);
     setContactText("");
@@ -113,9 +122,9 @@ export default function CustomerDetailPage() {
         {/* Info row */}
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(160px,1fr))", gap:12, marginTop:20, paddingTop:20, borderTop:"1px solid #cfd4dc" }}>
           {[
-            { label:"โทรศัพท์", value:`📞 ${customer.phone}` },
-            { label:"อีเมล",    value:`📧 ${customer.email}` },
-            { label:"จังหวัด",  value:`📍 ${customer.province}` },
+            { label:"โทรศัพท์", value:<span style={{display:"flex",alignItems:"center",gap:5}}><Phone size={13}/>{customer.phone}</span> },
+            { label:"อีเมล",    value:<span style={{display:"flex",alignItems:"center",gap:5}}><Mail size={13}/>{customer.email}</span> },
+            { label:"จังหวัด",  value:<span style={{display:"flex",alignItems:"center",gap:5}}><MapPin size={13}/>{customer.province}</span> },
             { label:"มูลค่ารวม",value:`฿${totalValue.toLocaleString()}` },
           ].map(item => (
             <div key={item.label} style={{ background:"#f8f9fb", borderRadius:10, padding:"12px 14px", border:"1px solid #f0f0f5" }}>
@@ -220,10 +229,10 @@ export default function CustomerDetailPage() {
           <div style={{ marginBottom:18, padding:"14px 16px", background:"#f8f9fb", borderRadius:12, border:"1px solid #f0f0f5" }}>
             <div style={{ fontSize:"0.74rem", fontWeight:700, color:STEEL, marginBottom:10 }}>บันทึกการติดต่อใหม่</div>
             <div style={{ display:"flex", gap:6, marginBottom:8 }}>
-              {Object.entries(CONTACT_ICONS).map(([k,icon]) => (
+              {CONTACT_TYPES.map(k => (
                 <button key={k} onClick={() => setContactType(k)}
-                  style={{ width:32, height:32, borderRadius:8, border:contactType===k?`2px solid ${PRIMARY}`:"1px solid #e2e8f0", background:contactType===k?"#dce5f0":"#fff", cursor:"pointer", fontSize:"0.9rem" }}>
-                  {icon}
+                  style={{ width:32, height:32, borderRadius:8, border:contactType===k?`2px solid ${PRIMARY}`:"1px solid #e2e8f0", background:contactType===k?"#dce5f0":"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <ContactIcon type={k}/>
                 </button>
               ))}
             </div>
@@ -245,8 +254,8 @@ export default function CustomerDetailPage() {
                 {i < contacts.length-1 && (
                   <div style={{ position:"absolute", left:14, top:30, bottom:0, width:2, background:"#cfd4dc" }}/>
                 )}
-                <div style={{ width:30, height:30, borderRadius:"50%", background:"#dce5f0", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"0.85rem", flexShrink:0, zIndex:1 }}>
-                  {a.icon}
+                <div style={{ width:30, height:30, borderRadius:"50%", background:"#dce5f0", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, zIndex:1 }}>
+                  <ContactIcon type={a.type}/>
                 </div>
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:"0.84rem", color:STEEL, fontWeight:500, marginBottom:2 }}>{a.text}</div>

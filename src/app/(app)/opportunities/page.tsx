@@ -2,8 +2,8 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function PipelineRedirect() {
+export default function OpportunitiesRedirect() {
   const router = useRouter();
-  useEffect(() => { router.replace("/leads"); }, [router]);
+  useEffect(() => { router.replace("/pipeline"); }, [router]);
   return null;
 }

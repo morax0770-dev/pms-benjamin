@@ -35,7 +35,7 @@ function DualBar({ data }: { data: typeof MONTHLY_CASH }) {
 export default function FinancePage() {
   const totalIncome = MONTHLY_CASH.reduce((s, d) => s + d.income, 0);
   const totalExpense = MONTHLY_CASH.reduce((s, d) => s + d.expense, 0);
-  const totalApproved = quotations.filter(q => q.status === "approved").reduce((s, q) => s + q.totalValue, 0);
+  const totalApproved = quotations.filter(q => q.status === "won").reduce((s, q) => s + q.totalValue, 0);
   const projectValue = projects.filter(p => p.status === "in_progress").reduce((s, p) => {
     const v = parseFloat(p.value.replace(/[฿,MKB]/g, "").trim());
     return s + (p.value.includes("M") ? v * 1000000 : p.value.includes("K") ? v * 1000 : v);
@@ -113,7 +113,7 @@ export default function FinancePage() {
             </thead>
             <tbody>
               {[
-                { date: "2026-06-20", name: "งวดที่ 1 — โกดัง EASYBUILD", client: "บจ. ไทยสตีล", type: "รายรับ", amount: "฿540,000", pos: true },
+                { date: "2026-06-20", name: "งวดที่ 1 — โกดังสินค้า ไทยสตีล", client: "บจ. ไทยสตีล", type: "รายรับ", amount: "฿540,000", pos: true },
                 { date: "2026-06-18", name: "ค่าวัสดุ", client: "โกดัง PEB ราชบุรี", type: "รายจ่าย", amount: "฿120,000", pos: false },
                 { date: "2026-06-15", name: "งวดสุดท้าย — VCS Asia", client: "VCS Asia", type: "รายรับ", amount: "฿1,240,000", pos: true },
                 { date: "2026-06-12", name: "เงินเดือนพนักงาน", client: "ภายใน", type: "รายจ่าย", amount: "฿185,000", pos: false },

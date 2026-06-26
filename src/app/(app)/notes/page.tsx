@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function PipelineRedirect() {
+export default function NotesRedirect() {
   const router = useRouter();
   useEffect(() => { router.replace("/leads"); }, [router]);
   return null;

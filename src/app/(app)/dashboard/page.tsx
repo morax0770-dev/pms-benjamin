@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import {
   leads, projects, tasks, appointments, customers, payments,
-  leadStatusLabel,
+  leadStatusLabel, recentActivity,
 } from "@/lib/mock";
 import type { LeadStatus } from "@/lib/mock";
 
@@ -19,18 +19,19 @@ const MONTHLY = [
 const THAI_DAYS         = ["อา","จ","อ","พ","พฤ","ศ","ส"];
 const THAI_MONTHS_FULL  = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
 const MONTHS_SHORT      = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-const APPT_COLOR: Record<string,string> = { survey:"#4299e1",design_meet:"#4299e1",contract_sign:"#22c55e",client_meet:"#f59e0b",quotation:"#f04d6a" };
+const APPT_COLOR: Record<string,string> = { survey:"#003366",design_meet:"#003366",contract_sign:"#22c55e",client_meet:"#f59e0b",quotation:"#f04d6a" };
 const APPT_LABEL: Record<string,string> = { survey:"สำรวจพื้นที่",design_meet:"ประชุมออกแบบ",contract_sign:"เซ็นสัญญา",client_meet:"พบลูกค้า",quotation:"เสนอราคา" };
-const AVATAR_COLORS = ["#003366","#4299e1","#0d9488","#f59e0b","#f04d6a","#22c55e","#ed8936","#64748b"];
+const AVATAR_COLORS = ["#003366","#2D2D2D","#0d9488","#f59e0b","#f04d6a","#22c55e","#475569","#C0C0C0"];
 
 // Status → badge class map
 const STATUS_BADGE: Record<string,string> = {
-  NEW:"bj-badge bj-badge-muted",
-  WAITING:"bj-badge bj-badge-info",
-  BULLET:"bj-badge bj-badge-warning",
-  QUOTED:"bj-badge bj-badge-success",
-  PAID:"bj-badge bj-badge-success",
-  CANCELLED:"bj-badge bj-badge-danger",
+  new_lead:    "bj-badge bj-badge-muted",
+  contacted:   "bj-badge bj-badge-info",
+  meeting:     "bj-badge bj-badge-warning",
+  quotation:   "bj-badge bj-badge-success",
+  negotiation: "bj-badge bj-badge-warning",
+  won:         "bj-badge bj-badge-success",
+  lost:        "bj-badge bj-badge-danger",
 };
 
 // ─── HELPERS ─────────────────────────────────────────────────────
@@ -51,7 +52,7 @@ const IcoMoney  = ({size=24,color="#22c55e"}:{size?:number;color?:string})=>(
   <svg width={size} height={size} fill="none" viewBox="0 0 24 24" stroke={color} strokeWidth="1.8">
     <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
   </svg>);
-const IcoPhone  = ({size=24,color="#4299e1"}:{size?:number;color?:string})=>(
+const IcoPhone  = ({size=24,color="#003366"}:{size?:number;color?:string})=>(
   <svg width={size} height={size} fill="none" viewBox="0 0 24 24" stroke={color} strokeWidth="1.8">
     <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.9 10.82 19.79 19.79 0 01.84 2.18 2 2 0 012.83 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 7.91a16 16 0 006 6l.98-.98a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
   </svg>);
@@ -157,8 +158,8 @@ function MiniCalendar({year,month,apptDates}:{year:number;month:number;apptDates
 // ─── LEAD DONUT ──────────────────────────────────────────────────
 function LeadDonut() {
   const total=leads.length;
-  const paid=leads.filter(l=>l.status==="PAID").length;
-  const active=leads.filter(l=>l.status!=="PAID"&&l.status!=="CANCELLED").length;
+  const paid=leads.filter(l=>l.status==="won").length;
+  const active=leads.filter(l=>l.status!=="won"&&l.status!=="lost").length;
   const paidPct=total>0?Math.round(paid/total*100):0;
   const activePct=total>0?Math.round(active/total*100):0;
   const R1=54,R2=38,CX=80,CY=80,SW=14;
@@ -192,6 +193,71 @@ function LeadDonut() {
   );
 }
 
+// ─── RECENT ACTIVITY ─────────────────────────────────────────────
+const ACT_ICON: Record<string,string> = {
+  lead_status: "🔄", task_done: "✅", quotation: "📄", payment: "💳", note: "📝",
+};
+const PRODUCT_COLOR: Record<string,string> = {
+  "อาคารสำเร็จรูป":   "#003366",
+  "อาคารโรงงาน":      "#f59e0b",
+  "โกดังสินค้า":      "#22c55e",
+  "อาคารสำนักงาน":    "#0d9488",
+  "อาคารเชิงพาณิชย์": "#0369a1",
+  "สนามกีฬาในร่ม":    "#f04d6a",
+};
+
+function RecentActivityFeed() {
+  return (
+    <div className="bj-card" style={{height:"100%"}}>
+      <div className="bj-card-header" style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div className="bj-card-title">กิจกรรมล่าสุด</div>
+        <div className="bj-card-desc" style={{fontSize:"0.65rem"}}>อัพเดทล่าสุดของทีม</div>
+      </div>
+      <div className="bj-card-content" style={{paddingTop:4}}>
+        <div style={{display:"flex",flexDirection:"column",gap:0}}>
+          {recentActivity.map((act,idx)=>(
+            <div key={act.id} style={{display:"flex",gap:12,padding:"10px 0",
+              borderBottom:idx<recentActivity.length-1?"1px solid var(--border)":"none",
+              alignItems:"flex-start"}}>
+              {/* Avatar */}
+              <div style={{width:32,height:32,borderRadius:"50%",background:act.userColor+"1a",
+                border:`2px solid ${act.userColor}22`,display:"flex",alignItems:"center",
+                justifyContent:"center",fontSize:"0.58rem",fontWeight:900,color:act.userColor,flexShrink:0}}>
+                {act.userInitials}
+              </div>
+              {/* Content */}
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:"0.73rem",color:"var(--foreground)",lineHeight:1.45}}>
+                  <span style={{fontWeight:700}}>{act.user}</span>
+                  {" "}{act.action}{" "}
+                  <span style={{color:"#003366",fontWeight:600}}>{act.subject}</span>
+                  {act.subjectId&&<span style={{color:"var(--muted-foreground)",fontSize:"0.62rem"}}> ({act.subjectId})</span>}
+                </div>
+                <div style={{display:"flex",alignItems:"center",gap:6,marginTop:3}}>
+                  {act.newStatus&&(
+                    <span style={{fontSize:"0.6rem",fontWeight:700,padding:"1px 7px",
+                      borderRadius:99,background:"var(--muted)",color:"var(--muted-foreground)"}}>
+                      → {act.newStatus}
+                    </span>
+                  )}
+                  <span style={{fontSize:"0.6rem",fontWeight:700,padding:"1px 7px",borderRadius:99,
+                    background:PRODUCT_COLOR[act.product]+"18",color:PRODUCT_COLOR[act.product]}}>
+                    {act.product}
+                  </span>
+                  <span style={{fontSize:"0.6rem",color:"var(--muted-foreground)",marginLeft:"auto"}}>
+                    {act.timeAgo}
+                  </span>
+                </div>
+              </div>
+              <span style={{fontSize:"0.85rem",flexShrink:0,marginTop:2}}>{ACT_ICON[act.type]}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── PAGE ─────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const [tab,setTab]           = useState<"week"|"month"|"year">("month");
@@ -199,7 +265,7 @@ export default function DashboardPage() {
   const [calMonth,setCalMonth] = useState(5);
 
   const totalRevenue = useMemo(()=>payments.filter(p=>p.status==="confirmed").reduce((s,p)=>s+p.amount,0),[]);
-  const activeLeads  = useMemo(()=>leads.filter(l=>l.status!=="PAID"&&l.status!=="CANCELLED"),[]);
+  const activeLeads  = useMemo(()=>leads.filter(l=>l.status!=="won"&&l.status!=="lost"),[]);
   const upcomingAppts= useMemo(()=>[...appointments].filter(a=>a.date>="2026-06-24"&&a.status==="upcoming").sort((a,b)=>a.date.localeCompare(b.date)).slice(0,2),[]);
   const apptDates    = useMemo(()=>new Set(appointments.map(a=>a.date)),[]);
   const inProgressP  = useMemo(()=>projects.filter(p=>p.status==="in_progress"),[]);
@@ -214,7 +280,7 @@ export default function DashboardPage() {
       <div className="bj-page-header" style={{marginBottom:20}}>
         <div>
           <h1 className="bj-page-title">แผงควบคุม</h1>
-          <p className="bj-page-sub">Benjamin PMS · วันที่ 24 มิถุนายน 2569</p>
+          <p className="bj-page-sub">Benjamin PMS · {(() => { const d=new Date(); const m=["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"]; return `วันที่ ${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()+543}`; })()}</p>
         </div>
         <a href="/leads">
           <button className="bj-btn bj-btn-primary bj-btn-md" style={{gap:6}}>
@@ -327,6 +393,42 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* ── Recent Activity + Project Stats ─────────────────── */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 280px",gap:14,marginBottom:14}}>
+
+        <RecentActivityFeed/>
+
+        {/* Project Stats — เหมือนที่ต้นฉบับแสดงสรุปโครงการ */}
+        <div className="bj-card">
+          <div className="bj-card-header">
+            <div className="bj-card-title">โครงการ</div>
+            <div className="bj-card-desc">สรุปสถานะทั้งหมด</div>
+          </div>
+          <div className="bj-card-content" style={{paddingTop:4}}>
+            {([
+              { label:"ยังไม่เริ่ม",     status:"not_started", color:"#6b7280",  bg:"#f0f0f5" },
+              { label:"กำลังดำเนินการ",  status:"in_progress",  color:"#003366", bg:"#dce5f0" },
+              { label:"หยุดชั่วคราว",    status:"on_hold",      color:"#f59e0b", bg:"#fef3cd" },
+              { label:"เสร็จแล้ว",       status:"completed",    color:"#22c55e", bg:"#e5faf0" },
+            ] as const).map(s=>{
+              const count = projects.filter(p=>p.status===s.status).length;
+              const myCount = projects.filter(p=>p.status===s.status&&p.assigned.includes("สมชาย")).length;
+              return (
+                <div key={s.status} style={{display:"flex",alignItems:"center",gap:10,
+                  padding:"11px 12px",borderRadius:10,background:s.bg,marginBottom:8,border:`1px solid ${s.color}18`}}>
+                  <div style={{width:8,height:8,borderRadius:"50%",background:s.color,flexShrink:0}}/>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:"0.72rem",fontWeight:600,color:"var(--foreground)"}}>{s.label}</div>
+                    <div style={{fontSize:"0.62rem",color:"var(--muted-foreground)",marginTop:1}}>มอบหมายให้ฉัน: {myCount}</div>
+                  </div>
+                  <div style={{fontSize:"1.4rem",fontWeight:900,color:s.color,lineHeight:1}}>{count}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       {/* ── Bottom Row ───────────────────────────────────────── */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 210px 232px",gap:14}}>
 
@@ -372,7 +474,7 @@ export default function DashboardPage() {
                         <td style={{fontWeight:700,color:"var(--foreground)"}}>{l.value}</td>
                         <td style={{color:"var(--muted-foreground)",fontSize:"0.75rem"}}>{l.province}</td>
                         <td>
-                          <span className={STATUS_BADGE[l.status]??STATUS_BADGE.NEW}>
+                          <span className={STATUS_BADGE[l.status]??STATUS_BADGE.new_lead}>
                             {leadStatusLabel[l.status as LeadStatus]??l.status}
                           </span>
                         </td>

@@ -395,7 +395,7 @@ export default function ReportsPage(){
   const totalInv          = invoices.length; const paidInvAll=invoices.filter(i=>i.status==="paid").length;
   const collectionRate    = totalInv>0?Math.round(paidInvAll/totalInv*100):0;
   const sentQuotes        = quotations.filter(q=>q.status!=="draft").length;
-  const approvedQuotes    = quotations.filter(q=>q.status==="approved").length;
+  const approvedQuotes    = quotations.filter(q=>q.status==="won").length;
   const winRate           = sentQuotes>0?Math.round(approvedQuotes/sentQuotes*100):0;
   const taskCompletion    = tasks.length>0?Math.round(doneTasks/tasks.length*100):0;
 

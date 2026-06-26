@@ -21,15 +21,14 @@ const INP: React.CSSProperties = {
 };
 
 const ROLE_COLOR: Record<string, { bg: string; text: string }> = {
-  DEALER_ADMIN: { bg: "#dce5f0", text: PRIMARY },
-  DEALER_SALES: { bg: "#e5faf0", text: "#15803d" },
-  DEALER_SITE:  { bg: "#fef3cd", text: "#f59e0b" },
+  ผู้จัดการสาขา: { bg: "#dce5f0", text: PRIMARY },
+  เซลส์:         { bg: "#e5faf0", text: "#15803d" },
 };
-const DEPT_OPTIONS = ["บริหาร", "ขาย", "ไซต์งาน", "สนับสนุน"];
-const ROLE_OPTIONS = ["DEALER_ADMIN", "DEALER_SALES", "DEALER_SITE"];
+const DEPT_OPTIONS = ["บริหาร", "ขาย", "สนับสนุน"];
+const ROLE_OPTIONS = ["ผู้จัดการสาขา", "เซลส์"];
 
 type MForm = { name: string; role: string; dept: string; phone: string };
-const blank = (): MForm => ({ name: "", role: "DEALER_SALES", dept: "ขาย", phone: "" });
+const blank = (): MForm => ({ name: "", role: "เซลส์", dept: "ขาย", phone: "" });
 
 function avatarColor(name: string) {
   const colors = ["#003366", "#22c55e", "#f59e0b", "#f04d6a", "#002244", "#8fa3b8", "#0d9488", "#3b82f6"];
@@ -78,10 +77,9 @@ export default function TeamPage() {
   }
 
   const stats = useMemo(() => ({
-    total:  members.length,
-    admin:  members.filter(m => m.role === "DEALER_ADMIN").length,
-    sales:  members.filter(m => m.role === "DEALER_SALES").length,
-    site:   members.filter(m => m.role === "DEALER_SITE").length,
+    total:   members.length,
+    admin:   members.filter(m => m.role === "ผู้จัดการสาขา").length,
+    sales:   members.filter(m => m.role === "เซลส์").length,
   }), [members]);
 
   const [deptFilter, setDeptFilter] = useState<string>("ALL");
@@ -117,12 +115,11 @@ export default function TeamPage() {
         </div>
 
         {/* Stat cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 14 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 14 }}>
           {[
-            { label: "สมาชิกทั้งหมด", value: stats.total,  color: PRIMARY,   icon: <Users size={16} color={PRIMARY} /> },
-            { label: "ผู้จัดการ",     value: stats.admin,  color: PRIMARY,   icon: <UserCheck size={16} color={PRIMARY} /> },
-            { label: "เซลส์",         value: stats.sales,  color: "#22c55e", icon: <FileText size={16} color="#22c55e" /> },
-            { label: "ช่างหน้างาน",  value: stats.site,   color: "#f59e0b", icon: <Briefcase size={16} color="#f59e0b" /> },
+            { label: "สมาชิกทั้งหมด", value: stats.total, color: PRIMARY,   icon: <Users size={16} color={PRIMARY} /> },
+            { label: "ผู้จัดการสาขา", value: stats.admin, color: PRIMARY,   icon: <UserCheck size={16} color={PRIMARY} /> },
+            { label: "เซลส์",         value: stats.sales, color: "#22c55e", icon: <Briefcase size={16} color="#22c55e" /> },
           ].map((s, i) => (
             <div key={i} style={{ ...CARD, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ background: `${s.color}14`, borderRadius: 10, padding: 8 }}>{s.icon}</div>

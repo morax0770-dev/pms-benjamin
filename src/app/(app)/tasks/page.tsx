@@ -10,7 +10,7 @@ import {
   projectStatusLabel, projectStatusColor,
   type TaskStatus, type TaskPriority, type TaskMock,
 } from "@/lib/mock";
-import { Plus, Search, Download, List, LayoutGrid, Pencil, Trash2, X, ArrowRight, ExternalLink, ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, Search, Download, List, LayoutGrid, Pencil, Trash2, X, ArrowRight, ExternalLink, ChevronUp, ChevronDown, AlertTriangle } from "lucide-react";
 
 // ── Tokens ────────────────────────────────────────────────────
 const PRIMARY = "#003366";
@@ -224,7 +224,7 @@ function DetailPanel({task,allTasks,onClose,onEdit,onChangeStatus,onDelete}:{
             {[
               {l:"สถานะ",   v:<StatusBadge status={task.status}/>},
               {l:"ความสำคัญ",v:<PriorityBadge priority={task.priority}/>},
-              {l:"กำหนดส่ง", v:<span style={{fontSize:"0.78rem",fontWeight:700,color:overdue?"#f04d6a":STEEL}}>{overdue&&"⚠ "}{formatDue(task.due)}</span>},
+              {l:"กำหนดส่ง", v:<span style={{fontSize:"0.78rem",fontWeight:700,color:overdue?"#f04d6a":STEEL,display:"inline-flex",alignItems:"center",gap:3}}>{overdue&&<AlertTriangle size={12}/>}{formatDue(task.due)}</span>},
             ].map((r,i)=>(
               <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 0",borderBottom:`1px solid #f0f4f8`}}>
                 <span style={{fontSize:"0.7rem",color:MUTED,fontWeight:600}}>{r.l}</span>
@@ -264,13 +264,12 @@ function DetailPanel({task,allTasks,onClose,onEdit,onChangeStatus,onDelete}:{
         </div>
       )}
 
-      {/* Tab: โครงการ */}
+      {/* Tab: ดีล */}
       {tab==="project"&&(
         <div style={{padding:"14px 14px"}}>
           {relProject?(
             <>
-              <button onClick={()=>router.push("/projects")}
-                style={{display:"flex",alignItems:"flex-start",gap:12,width:"100%",padding:"12px",borderRadius:12,background:"#f8f9fb",border:`1px solid ${BORDER}`,cursor:"pointer",textAlign:"left",marginBottom:14}}>
+              <div style={{display:"flex",alignItems:"flex-start",gap:12,width:"100%",padding:"12px",borderRadius:12,background:"#f8f9fb",border:`1px solid ${BORDER}`,marginBottom:14}}>
                 <div style={{flex:1}}>
                   <div style={{fontSize:"0.8rem",fontWeight:800,color:PRIMARY,marginBottom:4}}>{relProject.title}</div>
                   <div style={{fontSize:"0.7rem",color:MUTED,marginBottom:6}}>{relProject.client}</div>
@@ -279,8 +278,7 @@ function DetailPanel({task,allTasks,onClose,onEdit,onChangeStatus,onDelete}:{
                     <span style={{fontSize:"0.7rem",color:MUTED}}>{relProject.progress}%</span>
                   </div>
                 </div>
-                <ExternalLink size={12} color={MUTED} style={{flexShrink:0,marginTop:3}}/>
-              </button>
+              </div>
               {sibling.length>0&&(
                 <>
                   <div style={{fontSize:"0.63rem",fontWeight:700,color:MUTED,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>งานอื่นในโครงการ ({sibling.length})</div>
@@ -587,7 +585,7 @@ export default function TasksPage(){
                           <td style={{padding:"12px 14px",whiteSpace:"nowrap"}}><PriorityBadge priority={t.priority}/></td>
                           <td style={{padding:"12px 14px",whiteSpace:"nowrap"}}>
                             <span style={{fontSize:"0.78rem",fontWeight:overdue?700:500,color:overdue?"#f04d6a":soon?"#f59e0b":MUTED}}>
-                              {overdue&&<span style={{marginRight:3}}>⚠</span>}{formatDue(t.due)}
+                              {overdue&&<AlertTriangle size={12} style={{marginRight:3}}/>}{formatDue(t.due)}
                             </span>
                           </td>
                           <td style={{padding:"12px 14px",whiteSpace:"nowrap"}}><StatusBadge status={t.status}/></td>

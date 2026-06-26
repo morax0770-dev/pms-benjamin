@@ -547,6 +547,15 @@ export default function ContractsPage(){
                   </div>
                 ))}
                 {/* Status workflow */}
+                {selected.status==="active"&&(
+                  <div style={{marginTop:14}}>
+                    <button onClick={()=>router.push("/finance")}
+                      style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 12px",borderRadius:10,background:"#dce5f0",border:"none",cursor:"pointer",width:"100%"}}>
+                      <span style={{fontSize:"0.76rem",fontWeight:700,color:PRIMARY}}>ออกใบแจ้งหนี้</span>
+                      <ArrowRight size={13} color={PRIMARY}/>
+                    </button>
+                  </div>
+                )}
                 {STATUS_ACTIONS[selected.status].length>0&&(
                   <div style={{marginTop:14}}>
                     <div style={{fontSize:"0.63rem",fontWeight:700,color:MUTED,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>เปลี่ยนสถานะ</div>

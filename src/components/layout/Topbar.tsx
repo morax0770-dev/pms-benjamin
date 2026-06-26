@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useRole } from "@/context/RoleContext";
+import { MessageCircle, CheckCircle2, AlertTriangle, ClipboardList, Banknote, User, Settings, LogOut } from "lucide-react";
 import { leads, projects, customers } from "@/lib/mock";
 
 const PRIMARY = "#003366";
@@ -12,11 +13,11 @@ const BG       = "#f4f6f9";
 
 // ── mock notifications ────────────────────────────────────────────
 const NOTIFS = [
-  { id: 1, icon: "💬", title: "ลีดใหม่เข้ามา", body: "บจ. สมุทรโกดัง — ต้องการโกดัง 1,200 ตร.ม.", time: "3 นาทีที่แล้ว", href: "/leads/4" },
-  { id: 2, icon: "✅", title: "อนุมัติใบเสนอราคา", body: "Q-2026-0097 ได้รับการอนุมัติจาก HQ", time: "1 ชั่วโมงที่แล้ว", href: "/quotations" },
-  { id: 3, icon: "⚠️", title: "โครงการใกล้ deadline", body: "EASYBUILD แม่สอด — เหลือ 7 วัน", time: "ผ่านมา 2 ชั่วโมง", href: "/projects/6" },
-  { id: 4, icon: "📋", title: "งานใหม่ถูกมอบหมาย", body: "เตรียมเอกสารส่งมอบ EASYBUILD", time: "เมื่อวาน", href: "/tasks" },
-  { id: 5, icon: "💰", title: "รับชำระเงินสำเร็จ", body: "โครงการระยอง VCS Asia — ฿6.2M", time: "เมื่อวาน", href: "/payments" },
+  { id: 1, icon: <MessageCircle size={17} color="#003366"/>, title: "ลีดใหม่เข้ามา", body: "บจ. สมุทรโกดัง — ต้องการโกดัง 1,200 ตร.ม.", time: "3 นาทีที่แล้ว", href: "/leads/4" },
+  { id: 2, icon: <CheckCircle2 size={17} color="#22c55e"/>, title: "อนุมัติใบเสนอราคา", body: "Q-2026-0097 ได้รับการอนุมัติจาก HQ", time: "1 ชั่วโมงที่แล้ว", href: "/quotations" },
+  { id: 3, icon: <AlertTriangle size={17} color="#f59e0b"/>, title: "โครงการใกล้ deadline", body: "โกดังสินค้า แม่สอด — เหลือ 7 วัน", time: "ผ่านมา 2 ชั่วโมง", href: "/projects/6" },
+  { id: 4, icon: <ClipboardList size={17} color="#6b7280"/>, title: "งานใหม่ถูกมอบหมาย", body: "เตรียมเอกสารส่งมอบโครงการแม่สอด", time: "เมื่อวาน", href: "/tasks" },
+  { id: 5, icon: <Banknote size={17} color="#003366"/>, title: "รับชำระเงินสำเร็จ", body: "โครงการระยอง VCS Asia — ฿6.2M", time: "เมื่อวาน", href: "/payments" },
 ];
 
 type SearchResult = { type: string; label: string; sub: string; href: string };
@@ -35,8 +36,7 @@ export function Topbar() {
   const { session, isHQ, currentKey, login, logout } = useRole();
   const router = useRouter();
   const initial = session.name.charAt(0).toUpperCase();
-  const roleLabel = isHQ ? "ผู้บริหาร HQ"
-    : ({ DEALER_ADMIN: "ผู้จัดการสาขา", DEALER_SALES: "เซลส์", DEALER_SITE: "ช่างหน้างาน" } as Record<string, string>)[session.role] ?? "สมาชิก";
+  const roleLabel = isHQ ? "ผู้บริหาร HQ" : "ผู้จัดการสาขา";
 
   // ── states ──
   const [showSearch, setShowSearch]     = useState(false);
@@ -228,7 +228,7 @@ export function Topbar() {
                         cursor:"pointer", textAlign:"left" }}
                       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = BG; }}
                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isRead ? "#fff" : "#f6f9ff"; }}>
-                      <span style={{ fontSize:"1.2rem", lineHeight:1, flexShrink:0, marginTop:1 }}>{n.icon}</span>
+                      <span style={{ flexShrink:0, marginTop:1, display:"flex" }}>{n.icon}</span>
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:2 }}>
                           <span style={{ fontSize:"0.78rem", fontWeight:700, color:STEEL }}>{n.title}</span>
@@ -291,14 +291,14 @@ export function Topbar() {
               {/* Menu items */}
               <div style={{ padding:"6px 0" }}>
                 {[
-                  { icon:"👤", label:"โปรไฟล์", href:"/settings" },
-                  { icon:"⚙️", label:"ตั้งค่า", href:"/settings" },
+                  { icon:<User size={15}/>, label:"โปรไฟล์", href:"/settings" },
+                  { icon:<Settings size={15}/>, label:"ตั้งค่า", href:"/settings" },
                 ].map(item => (
                   <button key={item.label} onClick={() => { setShowUser(false); router.push(item.href); }}
                     style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"9px 16px", border:"none", background:"none", cursor:"pointer", color:STEEL, fontSize:"0.8rem", fontWeight:600, textAlign:"left" }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = BG; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "none"; }}>
-                    <span style={{ fontSize:"0.9rem" }}>{item.icon}</span> {item.label}
+                    {item.icon} {item.label}
                   </button>
                 ))}
 
@@ -325,7 +325,7 @@ export function Topbar() {
                   style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"9px 16px", border:"none", background:"none", cursor:"pointer", color:"#f04d6a", fontSize:"0.8rem", fontWeight:700, textAlign:"left" }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#fdeaed"; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "none"; }}>
-                  <span style={{ fontSize:"0.9rem" }}>🚪</span> ออกจากระบบ
+                  <LogOut size={15}/> ออกจากระบบ
                 </button>
               </div>
             </div>

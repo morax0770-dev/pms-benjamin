@@ -102,8 +102,9 @@ export default function HQDealersPage() {
   const avgOnTime = active.length > 0 ? Math.round(active.reduce((s, d) => s + d.onTimePct, 0) / active.length) : 0;
   const totalPct = totalTarget > 0 ? Math.round(totalRevenue / totalTarget * 100) : 0;
 
-  // Filter + sort
+  // Filter + sort (exclude soft-deleted)
   const filtered = dealers.filter(d => {
+    if (d.deleted) return false;
     if (regionFilter !== "ทั้งหมด" && d.region !== regionFilter) return false;
     if (statusFilter === "active" && d.status !== "active") return false;
     if (statusFilter === "inactive" && d.status !== "inactive") return false;
@@ -133,8 +134,15 @@ export default function HQDealersPage() {
   }
 
   function remove(d: DealerRow) {
-    if (!confirm(`ลบ "${d.name}" ออกจากระบบ?\nการกระทำนี้ไม่สามารถย้อนกลับได้`)) return;
-    setDealers(prev => prev.filter(x => x.id !== d.id));
+    if (!confirm(`ลบ "${d.name}" ออกจากระบบ?\nข้อมูลลีด สัญญา และยอดขายของสาขายังคงอยู่`)) return;
+    setDealers(prev => prev.map(x => x.id === d.id ? { ...x, deleted: true, status: "inactive" } : x));
+  }
+
+  function resetPassword(d: DealerRow) {
+    const newCreds = genCredentials(d.code);
+    newCreds.password = `PEB-${d.code}-${String(Math.floor(1000 + Math.random() * 9000))}`;
+    setDealers(prev => prev.map(x => x.id === d.id ? { ...x, credentials: newCreds } : x));
+    setViewCredsDealer(prev => prev && prev.id === d.id ? { ...prev, credentials: newCreds } : prev);
   }
 
   function toggleStatus(d: DealerRow) {
@@ -379,9 +387,13 @@ export default function HQDealersPage() {
             <div style={{ padding: "16px 20px" }}>
               <CopyField label="อีเมล" value={viewCredsDealer.credentials.email} />
               <CopyField label="รหัสผ่าน" value={viewCredsDealer.credentials.password} />
-              <div style={{ fontSize: "0.72rem", color: "#6b7280", background: "#f0f4f8", borderRadius: 8, padding: "8px 12px", marginTop: 4 }}>
+              <div style={{ fontSize: "0.72rem", color: "#6b7280", background: "#f0f4f8", borderRadius: 8, padding: "8px 12px", marginTop: 4, marginBottom: 12 }}>
                 สาขาใช้อีเมลนี้เข้าสู่ระบบที่หน้า Login ของดีลเลอร์
               </div>
+              <button onClick={() => { if (confirm("รีเซ็ตรหัสผ่านสาขานี้?")) resetPassword(viewCredsDealer); }}
+                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 0", borderRadius: 10, border: "none", background: "#dce5f0", color: "#003366", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer" }}>
+                <Key size={13} /> รีเซ็ตรหัสผ่าน
+              </button>
             </div>
           </div>
         </div>

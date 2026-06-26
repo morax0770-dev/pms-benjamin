@@ -4,11 +4,11 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus, Search, Calendar, Clock, MapPin, Phone, LayoutList, CalendarDays,
-  ChevronLeft, ChevronRight, X, Check, Trash2, Edit2, ExternalLink,
+  ChevronLeft, ChevronRight, X, Check, Trash2, Edit2, ExternalLink, User,
 } from "lucide-react";
 import {
   appointments as INIT_APPTS, apptTypeLabel, apptTypeColor, apptStatusLabel, apptStatusColor,
-  leads, projects, customers,
+  leads, projects, customers, BUILDING_TYPES,
   type ApptType, type ApptStatus, type AppointmentMock,
 } from "@/lib/mock";
 
@@ -74,7 +74,7 @@ type ApptForm = Omit<AppointmentMock,"id">;
 
 const BLANK: ApptForm = {
   company:"", contact:"", phone:"", project:"",
-  buildingType:"EASYBUILD", area:0, province:"กรุงเทพฯ",
+  buildingType:BUILDING_TYPES[0], area:0, province:"กรุงเทพฯ",
   date:"", time:"09:00", type:"survey", assigned:"สมชาย",
   status:"upcoming", note:"",
 };
@@ -124,9 +124,9 @@ function ApptModal({ initial, title, onSave, onClose }:{
                 <input value={form.project} onChange={e=>set("project",e.target.value)} placeholder="ชื่อโครงการ" style={INP}/>
               </div>
               <div>
-                <label style={LBL}>ประเภทอาคาร</label>
+                <label style={LBL}>ประเภทสินค้า</label>
                 <select value={form.buildingType} onChange={e=>set("buildingType",e.target.value)} style={INP}>
-                  {["EASYBUILD","RANBUILD","PREFAB","Custom"].map(t=><option key={t}>{t}</option>)}
+                  {BUILDING_TYPES.map(t=><option key={t}>{t}</option>)}
                 </select>
               </div>
               <div>
@@ -391,7 +391,7 @@ function ApptCard({ a, onClick }:{ a:AppointmentMock; onClick:()=>void }){
       <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:5,flexShrink:0}}>
         <span style={{display:"inline-block",padding:"3px 10px",borderRadius:99,fontSize:"0.68rem",fontWeight:700,background:tc.bg,color:tc.text}}>{apptTypeLabel[a.type]}</span>
         <span style={{display:"inline-block",padding:"3px 10px",borderRadius:99,fontSize:"0.65rem",fontWeight:600,background:sc.bg,color:sc.text}}>{apptStatusLabel[a.status]}</span>
-        <span style={{fontSize:"0.68rem",color:MUTED}}>👤 {a.assigned}</span>
+        <span style={{fontSize:"0.68rem",color:MUTED,display:"inline-flex",alignItems:"center",gap:4}}><User size={12}/>{a.assigned}</span>
       </div>
     </div>
   );

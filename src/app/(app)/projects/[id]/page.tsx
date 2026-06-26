@@ -5,11 +5,12 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
   projects, customers, quotations, invoices as allInvoices,
+  milestones as mockMilestones,
   projectStatusLabel, projectStatusColor,
   quotationStatusLabel, quotationStatusColor,
   invoiceStatusLabel, invoiceStatusColor,
 } from "@/lib/mock";
-import { Plus, X, CheckCircle2, Clock, Circle, Receipt, ChevronDown, ExternalLink } from "lucide-react";
+import { Plus, X, CheckCircle2, Clock, Circle, Receipt, ChevronDown, ExternalLink, FileText, ClipboardList } from "lucide-react";
 
 // ── Tokens ─────────────────────────────────────────────────────
 const PRIMARY = "#003366";
@@ -40,12 +41,6 @@ const MS_COLOR: Record<MilestoneStatus, { label: string; color: string; bg: stri
   done:        { label: "เสร็จแล้ว",      color: "#22c55e", bg: "#e5faf0" },
 };
 
-const INIT_MILESTONES: Milestone[] = [
-  { id: 1, name: "เซ็นสัญญา / มัดจำ",   due: "2026-05-01", status: "done",        installment: 1, percent: 30, invoiceCreated: true  },
-  { id: 2, name: "ออกแบบแล้วเสร็จ",      due: "2026-06-15", status: "done",        installment: 2, percent: 20, invoiceCreated: false },
-  { id: 3, name: "ส่งมอบงวดกลาง",        due: "2026-08-30", status: "in_progress", installment: 3, percent: 30, invoiceCreated: false },
-  { id: 4, name: "ส่งมอบสมบูรณ์ / ปิดงาน", due: "2026-10-31", status: "upcoming",  installment: 4, percent: 20, invoiceCreated: false },
-];
 
 // ── Helpers ────────────────────────────────────────────────────
 function fmtDate(d: string | null) {
@@ -86,7 +81,19 @@ export default function ProjectDetailPage() {
   const project   = projects.find(p => p.id === projectId);
 
   const [tab,          setTab]          = useState<Tab>("overview");
-  const [milestones,   setMilestones]   = useState<Milestone[]>(INIT_MILESTONES);
+  const [milestones,   setMilestones]   = useState<Milestone[]>(() =>
+    mockMilestones
+      .filter(m => m.projectId === projectId)
+      .map(m => ({
+        id:             m.id,
+        name:           m.title,
+        due:            m.dueDate,
+        status:         (m.done ? "done" : "upcoming") as MilestoneStatus,
+        installment:    m.position,
+        percent:        25,
+        invoiceCreated: false,
+      }))
+  );
   const [notes,        setNotes]        = useState<Note[]>([]);
   const [noteText,     setNoteText]     = useState("");
   const [showAddMS,    setShowAddMS]    = useState(false);
@@ -390,7 +397,7 @@ export default function ProjectDetailPage() {
               const qc = quotationStatusColor[relQ.status];
               return (
                 <div style={{ background: "#f8f9fb", borderRadius: 10, padding: "12px 16px", border: `1px solid ${BORDER}`, display: "flex", alignItems: "center", gap: 12 }}>
-                  <span style={{ fontSize: "1.1rem" }}>📄</span>
+                  <FileText size={18} color={MUTED}/>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: "0.82rem", fontWeight: 700, color: STEEL }}>{relQ.id}</div>
                     <div style={{ fontSize: "0.7rem", color: MUTED }}>ใบเสนอราคา · {relQ.total}</div>
@@ -401,11 +408,11 @@ export default function ProjectDetailPage() {
               );
             })()}
             {[
-              { id: `CONTRACT-${projectId}`, label: "สัญญาโครงการ",     type: "สัญญา",      status: "ลงนามแล้ว", icon: "📋", color: "#22c55e", bg: "#e5faf0" },
-              { id: `INV-${projectId}-001`,  label: "ใบแจ้งหนี้ งวดที่ 1", type: "ใบแจ้งหนี้", status: "ชำระแล้ว",  icon: "🧾", color: "#22c55e", bg: "#e5faf0" },
+              { id: `CONTRACT-${projectId}`, label: "สัญญาโครงการ",     type: "สัญญา",      status: "ลงนามแล้ว", iconEl: <ClipboardList size={18} color={MUTED}/>, color: "#22c55e", bg: "#e5faf0" },
+              { id: `INV-${projectId}-001`,  label: "ใบแจ้งหนี้ งวดที่ 1", type: "ใบแจ้งหนี้", status: "ชำระแล้ว",  iconEl: <Receipt size={18} color={MUTED}/>, color: "#22c55e", bg: "#e5faf0" },
             ].map(doc => (
               <div key={doc.id} style={{ background: "#f8f9fb", borderRadius: 10, padding: "12px 16px", border: `1px solid ${BORDER}`, display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ fontSize: "1.1rem" }}>{doc.icon}</span>
+                {doc.iconEl}
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: "0.82rem", fontWeight: 700, color: STEEL }}>{doc.id}</div>
                   <div style={{ fontSize: "0.7rem", color: MUTED }}>{doc.type} · {doc.label}</div>

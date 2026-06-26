@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   projects, leads, quotations, appointments,
+  customers as mockCustomers, BUILDING_TYPES,
   projectStatusLabel, projectStatusColor, quotationStatusLabel, quotationStatusColor,
 } from "@/lib/mock";
 import {
@@ -32,18 +33,20 @@ type CustomerRow = {
 type SortKey = "company"|"category"|"status"|"projects"|"province"|"joinDate";
 type SortDir = "asc"|"desc";
 
-const INIT_CUSTOMERS: CustomerRow[] = [
-  { id:1, name:"คุณสมชาย ใจดี",      company:"บจ. ไทยสตีล",          email:"somchai@thaisteel.co.th",  phone:"081-234-5678", province:"นนทบุรี",       category:"โกดัง",        status:"active",   projects:2, joinDate:"2025-09-15", owner:"สมชาย เชียงใหม่",  initials:"สช", color:"#003366", invoiceCount:2, totalValue:1800000, paidValue:540000 },
-  { id:2, name:"คุณกาญจนา ม.",        company:"บจ. ซีซีเอส",           email:"kanjana@ccs.co.th",        phone:"082-345-6789", province:"เชียงใหม่",    category:"อุตสาหกรรม",  status:"active",   projects:1, joinDate:"2025-11-03", owner:"วิภา รัตนกุล",    initials:"กม", color:"#22c55e", invoiceCount:1, totalValue:3200000, paidValue:960000 },
-  { id:3, name:"คุณประยุทธ ร.",        company:"หจก. ราชบุรีโลหะ",      email:"prayuth@rajburi.co.th",    phone:"083-456-7890", province:"ราชบุรี",      category:"อุตสาหกรรม",  status:"active",   projects:1, joinDate:"2026-01-20", owner:"วิภา รัตนกุล",    initials:"ปร", color:"#f59e0b", invoiceCount:1, totalValue:760000,  paidValue:0 },
-  { id:4, name:"คุณดารัล ส.",          company:"บจ. สมุทรโกดัง",        email:"darat@smgodown.co.th",     phone:"084-567-8901", province:"สมุทรปราการ", category:"โกดัง",        status:"active",   projects:2, joinDate:"2026-02-10", owner:"สมชาย เชียงใหม่",  initials:"ดส", color:"#f04d6a", invoiceCount:1, totalValue:2000000, paidValue:0 },
-  { id:5, name:"VCS Asia (ระยอง)",     company:"VCS Asia Co., Ltd.",     email:"vcs@vcsasia.com",           phone:"085-678-9012", province:"ระยอง",        category:"อุตสาหกรรม",  status:"inactive", projects:3, joinDate:"2025-08-01", owner:"วิชัย ประสิทธิ์",  initials:"VC", color:"#002244", invoiceCount:2, totalValue:6200000, paidValue:6200000 },
-  { id:6, name:"คุณสุรัตน์ ล.",        company:"บจ. แม่สอดโลหะ",       email:"surat@maesot.co.th",       phone:"086-789-0123", province:"ตาก",           category:"โกดัง",        status:"active",   projects:1, joinDate:"2025-12-01", owner:"สมชาย เชียงใหม่",  initials:"สล", color:"#8fa3b8", invoiceCount:0, totalValue:4100000, paidValue:0 },
-  { id:7, name:"บจ. อุตรดิตถ์โลหะ",   company:"บจ. อุตรดิตถ์โลหะ",    email:"info@uttaradit.co.th",      phone:"087-890-1234", province:"อุตรดิตถ์",    category:"เกษตรกรรม",   status:"inactive", projects:0, joinDate:"2026-06-01", owner:"วิภา รัตนกุล",    initials:"อต", color:"#8fa3b8", invoiceCount:0, totalValue:0,       paidValue:0 },
-  { id:8, name:"บจ. นครสวรรค์โลหะ",   company:"บจ. นครสวรรค์โลหะ",    email:"nakhon@nsloha.co.th",      phone:"088-901-2345", province:"นครสวรรค์",    category:"งานตามแบบ",   status:"active",   projects:2, joinDate:"2025-07-15", owner:"กาญจนา มีสุข",    initials:"นส", color:"#22c55e", invoiceCount:1, totalValue:5400000, paidValue:5400000 },
-];
+type CustomerExtra = { status: CustomerStatus; projects: number; joinDate: string; owner: string; invoiceCount: number; totalValue: number; paidValue: number; };
+const EXTRA: Record<number, CustomerExtra> = {
+  1: { status:"active",   projects:2, joinDate:"2025-09-15", owner:"สมชาย เชียงใหม่",  invoiceCount:2, totalValue:1800000, paidValue:540000 },
+  2: { status:"active",   projects:1, joinDate:"2025-11-03", owner:"วิภา รัตนกุล",    invoiceCount:1, totalValue:3200000, paidValue:960000 },
+  3: { status:"active",   projects:1, joinDate:"2026-01-20", owner:"วิภา รัตนกุล",    invoiceCount:1, totalValue:760000,  paidValue:0 },
+  4: { status:"active",   projects:2, joinDate:"2026-02-10", owner:"สมชาย เชียงใหม่",  invoiceCount:1, totalValue:2000000, paidValue:0 },
+  5: { status:"inactive", projects:3, joinDate:"2025-08-01", owner:"วิชัย ประสิทธิ์",  invoiceCount:2, totalValue:6200000, paidValue:6200000 },
+  6: { status:"active",   projects:1, joinDate:"2025-12-01", owner:"สมชาย เชียงใหม่",  invoiceCount:0, totalValue:4100000, paidValue:0 },
+  7: { status:"inactive", projects:0, joinDate:"2026-06-01", owner:"วิภา รัตนกุล",    invoiceCount:0, totalValue:0,       paidValue:0 },
+  8: { status:"active",   projects:2, joinDate:"2025-07-15", owner:"กาญจนา มีสุข",    invoiceCount:1, totalValue:5400000, paidValue:5400000 },
+};
+const INIT_CUSTOMERS: CustomerRow[] = mockCustomers.map(c => ({ ...c, ...EXTRA[c.id] }));
 
-const CATEGORIES = ["อุตสาหกรรม","โกดัง","โชว์รูม","เกษตรกรรม","งานตามแบบ"];
+const CATEGORIES = [...BUILDING_TYPES];
 const OWNERS     = ["สมชาย เชียงใหม่","วิภา รัตนกุล","วิชัย ประสิทธิ์","กาญจนา มีสุข"];
 const PROVINCES  = ["กรุงเทพฯ","เชียงใหม่","ระยอง","เชียงราย","นนทบุรี","สมุทรสาคร","สมุทรปราการ","นครสวรรค์","ราชบุรี","ขอนแก่น","ตาก","อุตรดิตถ์","อื่นๆ"];
 
@@ -59,7 +62,7 @@ const PALETTE = ["#003366","#22c55e","#f59e0b","#f04d6a","#002244","#8fa3b8","#0
 
 // ── Add / Edit Modal ─────────────────────────────────────────
 type CustomerForm = Omit<CustomerRow,"id"|"initials"|"color"|"invoiceCount"|"totalValue"|"paidValue">;
-const BLANK_FORM: CustomerForm = { name:"",company:"",email:"",phone:"",province:"กรุงเทพฯ",category:"อุตสาหกรรม",status:"active",projects:0,joinDate:"",owner:"สมชาย เชียงใหม่" };
+const BLANK_FORM: CustomerForm = { name:"",company:"",email:"",phone:"",province:"กรุงเทพฯ",category:BUILDING_TYPES[0],status:"active",projects:0,joinDate:"",owner:"สมชาย เชียงใหม่" };
 
 function CustomerModal({ initial, title, onSave, onClose }:{
   initial:CustomerForm; title:string; onSave:(f:CustomerForm)=>void; onClose:()=>void;
